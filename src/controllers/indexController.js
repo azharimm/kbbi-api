@@ -18,9 +18,24 @@ exports.search = async (req, res) => {
         return errorJson(res, "Mohon isi query pencarian!");
     }
     const htmlResult = await request.get(
-        `${process.env.BASE_URL}/search.php?q=${q}`
+        `${process.env.BASE_URL}/entri/${q}`
     );
     const $ = await cheerio.load(htmlResult);
+    const resultLists = [];
+    const total = $("h2").length;
+    
+    for(let i = 0; i < total; i++) {
+        let kata = $("h2").eq(i).text();
+        let arti = [];
+        $("h2").eq(i).next().next().children("li").each((index, el) => {
+            let list = $(el).text();
+            arti.push(list);
+        })
+        resultLists.push({
+            kata,
+            arti,
+        })
+    }
 
-    return json(res, []);
+    return json(res, {total, resultLists});
 }
